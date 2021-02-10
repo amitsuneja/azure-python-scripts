@@ -22,6 +22,9 @@ from myLibForAzure.LoginToAccount import getHardwareProfile
 from myLibForAzure.LoginToAccount import getNetworkProfile
 from myLibForAzure.LoginToAccount import getVmProfile
 from myLibForAzure.LoginToAccount import createVm
+from myLibForAzure.LoginToAccount import getVm
+from myLibForAzure.LoginToAccount import appendDataDiskToStorageProfile
+from myLibForAzure.LoginToAccount import attachDiskToVm
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-srg", "--source_resource_group",required=True,help="Mandate : -srg or --source_resource_group")
@@ -139,7 +142,7 @@ for diskName in SrcDiskList:
     diskDict['dstDiskName'] = getReplaceText(diskName,srcVmName,dstVmName)
     finalDiskList.append(diskDict)
 
-diskCreationResultList = list()
+diskCreationObjectList = list()
 for item in finalDiskList:
     print("Disk Creation in progress...")
     print("Lun : ",item['lun'])
@@ -147,31 +150,47 @@ for item in finalDiskList:
     print("Destination Disk Name: ",item['dstDiskName'])
     print("Source Disk Resource ID: ",item['srcDiskId'])
     result = diskCreate(dstResGrp,item['dstDiskName'],dstVNetLocation,item['srcDiskId'])
-    diskCreationResultList.append(result.result())
+    diskCreationObjectList.append(result)
+    print("disk creation result:",result.result())
     print("\n")
 
-tempVarDiskId=diskCreationResultList[0].id
-tempVarDiskName=diskCreationResultList[0].name
+tempVarDiskId=diskCreationObjectList[0].result().id
+tempVarDiskName=diskCreationObjectList[0].result().name
 
-print("Fetching Storage Profile:\n")
+print("Fetching Storage Profile:")
 storageProfile=getStorageProfiletoAttachExistingOsDisk(tempVarDiskId,dstResGrp,tempVarDiskName,"Linux")
 pprint(storageProfile)
 print("\n")
 
-print("Fetching Hardware Profile:\n")
+print("Fetching Hardware Profile:")
 hardwareProfile=getHardwareProfile(srcVMSize)
 pprint(hardwareProfile)
 print("\n")
 
-print("Fetching Network Profile:\n")
+print("Fetching Network Profile:")
 networkProfile=getNetworkProfile(tempVarNicId)
 pprint(networkProfile)
 print("\n")
 
-print("Fetching Vm Profile:\n")
+print("Fetching Vm Profile:")
 vmProfile = getVmProfile(dstVNetLocation,storageProfile,hardwareProfile,networkProfile)
 pprint(vmProfile)
 print("\n")
 
 createVmResult=createVm(dstResGrp,dstVmName,vmProfile)
 print(createVmResult.result())
+print("________________________________________________________________________________________")
+# diskCreationResultList[0] was OS disk so we have to start from range(1,len(diskCreationResultList))
+# len(diskCreationResultList) > 1 ; that means data disk is present in source VM.
+if (len(diskCreationObjectList) > 1):
+    # We cant not use createVmResult and add data disk to it as it is a loorel poller object not VM object.
+    getVmResult = getVm(dstResGrp,dstVmName)
+    print("Adding data disks to VM{}".format(createVmResult.result().id))
+    for i in range(1,len(diskCreationObjectList)):
+        lunNo = i-1
+        # append all the disks to StorageProfile in a loop
+        getVmResult = appendDataDiskToStorageProfile(getVmResult,diskCreationObjectList[i],lunNo) 
+
+#runiing disk attach command finally.
+dataDiskAttachResult = attachDiskToVm(dstResGrp,dstVmName,getVmResult)
+print(dataDiskAttachResult.result())

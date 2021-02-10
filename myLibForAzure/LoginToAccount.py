@@ -334,8 +334,13 @@ def getIDofDiskWithName(diskName):
 
 def getReplaceText(orignalText,textToReplace,textToReplacewith):
     import re
-    newText = re.sub(textToReplace,textToReplacewith,orignalText, flags=re.IGNORECASE)
-    return newText
+
+    ifTextInString = re.search(textToReplace,orignalText,flags=re.IGNORECASE)
+    if not ifTextInString:
+        newText = textToReplacewith +"-" + orignalText
+    if ifTextInString:
+        newText = re.sub(textToReplace,textToReplacewith,orignalText, flags=re.IGNORECASE)
+    return newText.lower()
 
 def diskCreate(resourceGroupNameWhereDiskWillBeCreated,diskNameToCreate,locationOfNewDisk,orignalDiskID):
     computeClient=getComputeClient()
@@ -373,4 +378,32 @@ def createVm(resGrpName,vmName,vmProfile):
     computeClient=getComputeClient()
     poller = computeClient.virtual_machines.begin_create_or_update(resGrpName,vmName,vmProfile)
     return poller
+
+def getVm(resourceGroupName,vmName):
+    computeClient=getComputeClient()
+    getVmResult = computeClient.virtual_machines.get(resourceGroupName,vmName)
+    return getVmResult
+
+def appendDataDiskToStorageProfile(getVmResult,diskCreationResultObject,lunNo):
+    print("________________________________________________________________________________________")
+    print(getVmResult.storage_profile)
+    print("________________________________________________________________________________________")
+    getVmResult.storage_profile.data_disks.append({
+            'lun': lunNo,
+            'name': diskCreationResultObject.result().name,
+            'create_option': DiskCreateOption.attach,
+            'managed_disk': {
+                'id': diskCreationResultObject.result().id
+            }
+        })
+    print("________________________________________________________________________________________")
+    print(getVmResult.storage_profile)
+    print("________________________________________________________________________________________")
+    return getVmResult
+
+
+def attachDiskToVm(resourceGroupName,vmName,getVmResult):
+    computeClient=getComputeClient()
+    result=computeClient.virtual_machines.begin_create_or_update(resourceGroupName,vmName,getVmResult)
+    return result
 
