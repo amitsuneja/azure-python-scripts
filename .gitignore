@@ -1,0 +1,4 @@
+**/config/azureAccountDetails.ini
+**/myLibForAzure/SelectAccount.py
+**/myLibForAzure/__pycache__/*
+

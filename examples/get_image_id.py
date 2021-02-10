@@ -1,0 +1,17 @@
+from myLibForAzure.LoginToAccount import getComputeClient
+from myLibForAzure.LoginToAccount import ifVmExistInResourceGroup
+from myLibForAzure.LoginToAccount import ifVnetExist
+from myLibForAzure.LoginToAccount import ifSubnetExist
+from myLibForAzure.LoginToAccount import ifStorageAccountExist
+from myLibForAzure.LoginToAccount import getSizeOfParticularVmInResourceGroup
+from myLibForAzure.LoginToAccount import getSubnetInfoObject
+from myLibForAzure.LoginToAccount import getNicParamsObject
+from myLibForAzure.LoginToAccount import createNic
+from myLibForAzure.LoginToAccount import getListOfAllDisksNameForParticularVminResourceGroup
+from myLibForAzure.LoginToAccount import getOsDiskDictForParticularVminResourceGroup
+from myLibForAzure.LoginToAccount import getIDofDiskWithName
+from myLibForAzure.LoginToAccount import getReplaceText
+from myLibForAzure.LoginToAccount import diskCreate
+computeClient=getComputeClient()
+image = computeClient.images.get("aks-cluster-rg","NS2-osdisk-20210129-101754")
+print(myImageDisk.id)

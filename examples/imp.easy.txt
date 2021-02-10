@@ -1,0 +1,3 @@
+data = json.dumps(result)
+html = json2html.convert(json=data)
+print(html)

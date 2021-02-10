@@ -1,0 +1,5 @@
+https://azure-storage.readthedocs.io/_modules/azure/storage/blob/models.html
+https://docs.microsoft.com/en-us/azure/storage/common/storage-samples-python
+https://docs.microsoft.com/en-us/azure/developer/python/azure-sdk-sovereign-domain
+https://docs.microsoft.com/en-us/azure/developer/python/azure-sdk-example-storage?tabs=cmd
+https://docs.microsoft.com/en-us/azure/developer/python/azure-sdk-samples-managed-disks
